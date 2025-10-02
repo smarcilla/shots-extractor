@@ -1,3 +1,4 @@
+# src/cli.py
 import json
 from pathlib import Path
 import typer
@@ -16,3 +17,6 @@ def scrape_url(url: str, out: str = "data/raw_event.json"):
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     Path(out).write_text(json.dumps(event, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[green]OK[/green] - Evento guardado en {out}")
+
+if __name__ == "__main__":
+    app()
