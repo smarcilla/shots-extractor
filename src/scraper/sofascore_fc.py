@@ -16,15 +16,20 @@ class SofaClient:
 
     def event_from_url(self, url: str) -> Dict[str, Any]:
         """
-        Devuelve un diccionario con información del partido a partir de la URL.
-        La estructura exacta depende de ScraperFC; este método actúa como fachada.
+        ScraperFC 3.3.4: usar Sofascore.get_match_dict(url) para obtener el dict del partido.
+        Acepta URL o ID, pero aquí le pasamos la URL tal cual.
         """
-        # Ejemplo típico: parsear ID y pedir el evento.
-        # Algunas versiones de ScraperFC exponen métodos como:
-        #   self.client.get_match(url)  ó  self.client.event(event_id)
-        # Ajusta a la API real si difiere.
-        data = self.client.get_match(url)  # <-- adapta si tu versión usa otro nombre
-        return data
+        get_match_dict = getattr(self.client, "get_match_dict", None)
+        if callable(get_match_dict):
+            return get_match_dict(url)
+
+        # Fallback defensivo por si alguna variante requiere ID explícito
+        get_id = getattr(self.client, "get_match_id_from_url", None)
+        if callable(get_id):
+            match_id = get_id(url)
+            return getattr(self.client, "get_match_dict")(match_id)
+
+        raise AttributeError("No se encontró Sofascore.get_match_dict en scraperfc 3.3.4")
 
     def shots_from_event(self, event: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
