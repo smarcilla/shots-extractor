@@ -8,13 +8,14 @@ def test_map_event_produces_valid_contract():
         "homeTeam": {"name": "Oviedo"},
         "awayTeam": {"name": "Barcelona"},
         "startDate": "2025-09-26T19:00:00Z",
-        "shots": [
-            {"minute": 12, "team": "home", "player": {"name": "A"}, "xg": 0.08, "outcome": "Saved"},
-            {"minute": 47, "team": "away", "player": {"name": "B"}, "xg": 0.19, "outcome": "Goal"},
-        ],
+        "homeScore": {"current": 1},
+        "awayScore": {"current": 2},
     }
     norm = map_event_to_contract(event)
     model = ShotsResponse.model_validate(norm)
     assert model.partido.idPartido == "99"
     assert model.partido.local == "Oviedo"
-    assert len(model.disparos) == 2
+    assert model.partido.visitante == "Barcelona"
+    assert model.partido.fechaISO == "2025-09-26T19:00:00Z"
+    assert model.partido.marcadorFinal.local == 1
+    assert model.partido.marcadorFinal.visitante == 2

@@ -67,3 +67,43 @@ class SofaClient:
             if v:
                 return str(v)
         return None
+
+    def final_score(self, event: Dict[str, Any]) -> Tuple[int, int]:
+        """
+        Extrae el marcador final del dict del evento.
+        Orden de preferencia:
+        1) homeScore.current / awayScore.current
+        2) scores.home / scores.away
+        3) estructuras alternativas comunes (home/away con 'score', 'display', etc.)
+        Si no se puede resolver, devuelve (0, 0).
+        """
+        # 1) Estructura Sofascore típica
+        try:
+            hs = (event.get("homeScore") or {}).get("current")
+            as_ = (event.get("awayScore") or {}).get("current")
+            if hs is not None and as_ is not None:
+                return int(hs), int(as_)
+        except Exception:
+            pass
+
+        # 2) Variante con dict 'scores'
+        try:
+            scores = event.get("scores") or {}
+            hs = scores.get("home")
+            as_ = scores.get("away")
+            if hs is not None and as_ is not None:
+                return int(hs), int(as_)
+        except Exception:
+            pass
+
+        # 3) Variantes con 'display' o 'score' anidados
+        try:
+            hs = (event.get("homeScore") or {}).get("display") or (event.get("home") or {}).get("score")
+            as_ = (event.get("awayScore") or {}).get("display") or (event.get("away") or {}).get("score")
+            if hs is not None and as_ is not None:
+                return int(hs), int(as_)
+        except Exception:
+            pass
+
+        # 4) Por defecto, 0-0 si no se encuentra nada confiable
+        return 0, 0    
