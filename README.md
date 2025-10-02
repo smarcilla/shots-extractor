@@ -1,4 +1,8 @@
-# Repositorio que guarda la generación de datos base para el proyecto de Simulación de Partidos.
+# Shots Extractor
+
+## Descripcion
+
+Repositorio que guarda la generación de datos base para el proyecto de Simulación de Partidos.
 
 ## Tareas Pendientes
 
