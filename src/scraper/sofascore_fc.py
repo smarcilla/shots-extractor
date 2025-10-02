@@ -1,6 +1,8 @@
 # src/scraper/sofascore_fc.py
 from typing import Any, Dict, List, Optional, Tuple
 
+import pandas
+
 # Nota: los nombres/clases exactas de ScraperFC pueden variar por versión.
 # Este wrapper está diseñado para aislar cambios y facilitar tests.
 try:
@@ -34,6 +36,20 @@ class SofaClient:
             "Pasa el id del partido (p.ej. 1234567) o una URL canónica con '#id:'."
         )        
 
+    def shots_df(self, match: str) -> "pandas.DataFrame":
+        # Caso 1: id numérico directo
+        if str(match).isdigit():
+            return self.client.scrape_match_shots(int(match))
+        
+        # Caso 2: URL canónica con '#id:'
+        if "#id:" in match:
+            return self.client.scrape_match_shots(match)
+        
+        # Caso 3: URL sin '#id:' -> no soportado por ScraperFC 3.3.4
+        raise ValueError(
+            "La URL no contiene '#id:<numero>'. "
+            "Pasa el id del partido (p.ej. 1234567) o una URL canónica con '#id:'."
+        )   
  
     def shots_from_event(self, event: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
