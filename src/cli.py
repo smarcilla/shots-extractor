@@ -5,11 +5,11 @@ from rich import print
 from src.scraper.sofascore_fc import SofaClient
 
 def main(
-    url: str = typer.Argument(..., help="URL de partido en SofaScore"),
+    match: str = typer.Argument(..., help="Id del partido o URL SofaScore con '#id:<num>'"),
     out: Path = typer.Option("data/raw_event.json", "--out", "-o", help="Ruta del JSON bruto"),
 ):
     c = SofaClient()
-    event = c.event_from_url(url)
+    event = c.event_from_url(match)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(event, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"[green]OK[/green] - Evento guardado en {out}")

@@ -14,23 +14,27 @@ class SofaClient:
             raise RuntimeError("ScraperFC (Sofascore) no está disponible. Revisa la instalación.")
         self.client = Sofascore()
 
-    def event_from_url(self, url: str) -> Dict[str, Any]:
+    def event_from_url(self, match: str) -> Dict[str, Any]:
         """
-        ScraperFC 3.3.4: usar Sofascore.get_match_dict(url) para obtener el dict del partido.
-        Acepta URL o ID, pero aquí le pasamos la URL tal cual.
+        Acepta:
+          - id numérico (str o int)
+          - URL canónica de SofaScore con '#id:<numero>'
         """
-        get_match_dict = getattr(self.client, "get_match_dict", None)
-        if callable(get_match_dict):
-            return get_match_dict(url)
+        # Caso 1: id numérico directo
+        if str(match).isdigit():
+            return self.client.get_match_dict(int(match))
 
-        # Fallback defensivo por si alguna variante requiere ID explícito
-        get_id = getattr(self.client, "get_match_id_from_url", None)
-        if callable(get_id):
-            match_id = get_id(url)
-            return getattr(self.client, "get_match_dict")(match_id)
+        # Caso 2: URL canónica con '#id:'
+        if "#id:" in match:
+            return self.client.get_match_dict(match)
 
-        raise AttributeError("No se encontró Sofascore.get_match_dict en scraperfc 3.3.4")
+        # Caso 3: URL sin '#id:' -> no soportado por ScraperFC 3.3.4
+        raise ValueError(
+            "La URL no contiene '#id:<numero>'. "
+            "Pasa el id del partido (p.ej. 1234567) o una URL canónica con '#id:'."
+        )        
 
+ 
     def shots_from_event(self, event: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         Extrae una lista de 'intentos/disparos' desde el dict del evento.
