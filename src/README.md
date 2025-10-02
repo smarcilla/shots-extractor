@@ -1,3 +1,7 @@
+# Repositorio que guarda la generación de datos base para el proyecto de Simulación de Partidos.
+
+## Tareas Pendientes
+
 ## Probar el CLI
 
 ### Probar event_cli
@@ -18,12 +22,19 @@ python -m src.shots_cli 14566650 --out "data\raw\shots_14566650.json"
 
 # Con URL canónica que contenga '#id:<num>'
 python -m src.shots_cli ""https://www.sofascore.com/es/football/match/barcelona-paris-saint-germain/UHsrgb#id:14566650" --out "data\raw\event_14566650.json"
+
 ```
 
-### Probar event_normalize_cli
+### Probar match_normalize_cli
 
 ```cmd
 python -m src.event_normalize_cli "data\raw\event_14566650.json" --out-dir "data\matches"
+
+# Windows (py launcher)
+py -m src.match_normalize_cli data\raw\event_14566650.json data\raw\shots_14566650.json -o data\matches
+
+# Cross-platform
+python -m src.match_normalize_cli "data/raw/event_14566650.json" "data/raw/shots_14566650.json" --out-dir "data/matches"
 ```
 
 ###
