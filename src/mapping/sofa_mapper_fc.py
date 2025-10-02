@@ -5,16 +5,25 @@ from src.scraper.sofascore_fc import SofaClient
 def map_event_to_contract(event: Dict[str, Any]) -> Dict[str, Any]:
     c = SofaClient()
     home, away = c.teams(event)
-    event_id = c.event_id(event)
-    date_iso = c.start_iso(event) or "1970-01-01T00:00:00Z" #TODO: mejorar fecha por defecto
+    event_id = str(c.event_id(event))  # el test espera string
+    date_iso = c.start_iso(event) or "1970-01-01T00:00:00Z"
     raw_shots = c.shots_from_event(event)
 
     mapped: List[Dict[str, Any]] = []
     for s in raw_shots:
         minute = int(s.get("minute") or s.get("time") or 0)
-        # identificar equipo: puede venir como "home"/"away" o ids
+
+        # identificar equipo y mapear a nombre
         team = s.get("team")
-        team_side = "local" if str(team).lower() in ("home", "local", "1") else "visitante"
+        team_str = str(team).lower()
+        if team_str in ("home", "local", "1"):
+            team_name = home
+        elif team_str in ("away", "visitante", "2"):
+            team_name = away
+        else:
+            # fallback por si llega id numérico o nombre ya resuelto
+            team_name = home if str(team) in ("home", home, "1") else (away if str(team) in ("away", away, "2") else str(team))
+
         player = (
             (s.get("player") or {}).get("name")
             or s.get("playerName")
@@ -26,7 +35,7 @@ def map_event_to_contract(event: Dict[str, Any]) -> Dict[str, Any]:
 
         mapped.append({
             "minuto": minute,
-            "equipo": team_side,
+            "equipo": team_name,
             "jugador": player,
             "xG": xg,
             "resultado": outcome,
@@ -34,11 +43,11 @@ def map_event_to_contract(event: Dict[str, Any]) -> Dict[str, Any]:
 
     return {
         "partido": {
-            "id_partido": event_id,
+            "idPartido": event_id,
             "fechaISO": date_iso,
             "local": home,
             "visitante": away,
-            "marcadorFinal": {"local": 0, "visitante": 0},  # opcional: ajustar si está en event
+            "marcadorFinal": {"local": 0, "visitante": 0},  # TODO: rellenar si el event lo trae
         },
         "disparos": mapped
     }
