@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional, Tuple
 # Nota: los nombres/clases exactas de ScraperFC pueden variar por versión.
 # Este wrapper está diseñado para aislar cambios y facilitar tests.
 try:
-    from scraperfc import Sofascore  # ← clase principal de ScraperFC para SofaScore
-except Exception as e:
+    from ScraperFC.sofascore import Sofascore  # ← clase principal de ScraperFC para SofaScore
+except ImportError as e:
     Sofascore = None  # para que los tests unitarios no fallen en import si no está instalado
 
 class SofaClient:
