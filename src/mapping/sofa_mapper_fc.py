@@ -126,7 +126,10 @@ def _to_iso8601(v: str) -> str:
         return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat().replace("+00:00", "Z")
     return s  # asumimos ya viene en ISO
 
-def map_event_to_contract(event: Dict[str, Any], shots: Union[List[Dict[str, Any]], Dict[str, Any]]) -> Dict[str, Any]:
+def map_event_to_contract(
+    event: Dict[str, Any],
+    shots: Union[List[Dict[str, Any]], Dict[str, Any], None] = None,
+) -> Dict[str, Any]:
     """
     Normaliza datos del partido y los disparos al contrato ShotsResponse.
     """
@@ -140,7 +143,7 @@ def map_event_to_contract(event: Dict[str, Any], shots: Union[List[Dict[str, Any
     home_score, away_score = c.final_score(event)
 
     # ---- Disparos
-    arr = _shots_array(shots)
+    arr = _shots_array(shots or [])
     disparos = [_map_one_shot(s, home, away) for s in arr]
 
     return {
