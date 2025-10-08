@@ -90,7 +90,6 @@ class ShotsPublisher:
             request=request,
             checksum=checksum,
             size_bytes=size_bytes,
-            uploaded_at=uploaded_at,
         )
         self._database.upsert_match_index(record=record)
 
@@ -142,7 +141,6 @@ class ShotsPublisher:
         request: ShotsPublicationRequest,
         checksum: str,
         size_bytes: int,
-        uploaded_at: datetime,
     ) -> dict[str, Any]:
         return {
             "id": request.match_id,
@@ -152,7 +150,6 @@ class ShotsPublisher:
             "storage_path": request.storage_path,
             "size_bytes": size_bytes,
             "checksum": checksum,
-            "uploaded_at": uploaded_at,
         }
 
     @staticmethod

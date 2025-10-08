@@ -78,7 +78,6 @@ def test_publish_shots_success_uploads_file_and_upserts_index() -> None:
         "storage_path": request.storage_path,
         "size_bytes": len(serialized),
         "checksum": result.checksum,
-        "uploaded_at": clock.return_value,
     }
 
     assert isinstance(result, PublishResult)

@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass
 from functools import lru_cache
 
+from dotenv import load_dotenv
 from supabase import Client, create_client
 
 from src.application.publish_shots import ShotsPublisher
@@ -47,6 +48,7 @@ class Settings:
 def get_settings() -> Settings:
     """Return cached settings to avoid re-reading environment on each request."""
 
+    load_dotenv()
     return Settings.from_env()
 
 

@@ -1,6 +1,7 @@
 """Infrastructure adapters for interacting with Supabase services."""
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import httpx
@@ -12,6 +13,9 @@ except ImportError:  # pragma: no cover
     StorageException = Exception  # type: ignore[assignment]
 
 from src.application.publish_shots import TransientStorageError
+
+
+logger = logging.getLogger(__name__)
 
 
 class SupabaseStorageAdapter:
@@ -32,10 +36,17 @@ class SupabaseStorageAdapter:
                 file_options={
                     "content-type": content_type,
                     "cache-control": "max-age=31536000",
-                    "upsert": True,
+                    "upsert": "true",  # el SDK espera valores string en cabeceras
                 },
             )
         except (StorageException, httpx.RequestError, TimeoutError) as exc:  # pragma: no cover - depende de supabase
+            logger.exception(
+                "Error subiendo fichero a Supabase Storage",
+                extra={
+                    "bucket": bucket,
+                    "path": path,
+                },
+            )
             raise TransientStorageError("Fallo temporal al subir a Supabase Storage") from exc
 
 
@@ -47,12 +58,24 @@ class SupabaseMatchesIndexRepository:
 
     def upsert_match_index(self, *, record: dict[str, Any]) -> None:
         try:
+            serializable_record = {
+                **record,
+                "date": record["date"].isoformat(),
+            }
             (
                 self._client.table("matches_index")
-                .upsert(record, on_conflict="id")
+                .upsert(serializable_record, on_conflict="id")
                 .execute()
             )
         except httpx.RequestError as exc:  # pragma: no cover - depende de supabase
+            logger.exception(
+                "Error temporal al acceder a matches_index",
+                extra={"match_id": record.get("id")},
+            )
             raise TransientStorageError("Fallo temporal al acceder a Supabase Database") from exc
         except Exception as exc:  # pragma: no cover - defensivo
+            logger.exception(
+                "Fallo no recuperable al registrar el índice",
+                extra={"match_id": record.get("id")},
+            )
             raise RuntimeError("No se pudo registrar el índice de partido") from exc

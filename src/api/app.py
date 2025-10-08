@@ -1,6 +1,7 @@
 """FastAPI application wiring the shots publication endpoint."""
 from __future__ import annotations
 
+import logging
 from dataclasses import asdict
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -12,6 +13,9 @@ from src.application.publish_shots import (
     ShotsPublicationRequest,
     ShotsPublisher,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_app() -> FastAPI:
@@ -42,6 +46,10 @@ def create_app() -> FastAPI:
         except ShotsPayloadValidationError as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
         except Exception as exc:  # pragma: no cover - defensivo
+            logger.exception("Error publicando disparos en Supabase", extra={
+                "match_id": payload.match_id,
+                "storage_path": payload.storage_path,
+            })
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail="Falló la publicación en Supabase",
