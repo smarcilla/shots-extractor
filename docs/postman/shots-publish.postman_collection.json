@@ -1,0 +1,199 @@
+{
+  "info": {
+    "_postman_id": "f76c2bb0-8b8a-4d8f-88f7-collection-placeholder",
+    "name": "Shots Extractor - Publish Shots",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Colección para validar el endpoint FastAPI `/v1/shots/publish`. Usa la variable `base_url` para apuntar al servidor local o despliegue."
+  },
+  "item": [
+    {
+      "name": "Publish Shots - Success",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"match_id\": \"atl-mad-20240928\",\n  \"storage_path\": \"matches/atl-mad-20240928.json\",\n  \"shots\": {\n    \"partido\": {\n      \"idPartido\": \"atl-mad-20240928\",\n      \"fechaISO\": \"2024-09-28T20:00:00+00:00\",\n      \"local\": \"Atletico Madrid\",\n      \"visitante\": \"Real Madrid\",\n      \"marcadorFinal\": {\n        \"local\": 2,\n        \"visitante\": 1\n      }\n    },\n    \"disparos\": [\n      {\n        \"minuto\": 12,\n        \"equipo\": \"Atletico Madrid\",\n        \"jugador\": \"Alvaro Morata\",\n        \"xG\": 0.32,\n        \"xGOT\": 0.18,\n        \"situacion\": \"Juego abierto\",\n        \"resultado\": \"Gol\",\n        \"tipo_disparo\": \"Pie derecho\"\n      }\n    ]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/shots/publish",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "shots",
+            "publish"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 201\", function () {", 
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Respuesta contiene metadatos\", function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('match_id', 'atl-mad-20240928');",
+              "  pm.expect(json).to.have.property('storage_path', 'matches/atl-mad-20240928.json');",
+              "  pm.expect(json).to.have.property('checksum');",
+              "  pm.expect(json).to.have.property('size_bytes');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Publish Shots - Validation Error (Mismatched ID)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"match_id\": \"atl-mad-20240928\",\n  \"storage_path\": \"matches/atl-mad-20240928.json\",\n  \"shots\": {\n    \"partido\": {\n      \"idPartido\": \"other-id\",\n      \"fechaISO\": \"2024-09-28T20:00:00+00:00\",\n      \"local\": \"Atletico Madrid\",\n      \"visitante\": \"Real Madrid\",\n      \"marcadorFinal\": {\n        \"local\": 2,\n        \"visitante\": 1\n      }\n    },\n    \"disparos\": []\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/shots/publish",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "shots",
+            "publish"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 400\", function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Detalle de validación presente\", function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.detail).to.include('no coincide');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Publish Shots - Validation Error (Storage Path)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"match_id\": \"atl-mad-20240928\",\n  \"storage_path\": \"../../secret.txt\",\n  \"shots\": {\n    \"partido\": {\n      \"idPartido\": \"atl-mad-20240928\",\n      \"fechaISO\": \"2024-09-28T20:00:00+00:00\",\n      \"local\": \"Atletico Madrid\",\n      \"visitante\": \"Real Madrid\",\n      \"marcadorFinal\": {\n        \"local\": 2,\n        \"visitante\": 1\n      }\n    },\n    \"disparos\": []\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/shots/publish",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "shots",
+            "publish"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 400\", function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Detalle informa ruta inválida\", function () {",
+              "  const json = pm.response.json();",
+              "  pm.expect(json.detail).to.include('ruta de almacenamiento');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Publish Shots - Malformed JSON",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "not a json"
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/shots/publish",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "v1",
+            "shots",
+            "publish"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 422\", function () {",
+              "  pm.response.to.have.status(422);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
